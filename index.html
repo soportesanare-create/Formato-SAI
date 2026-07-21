@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Formato de Tratamiento SAI.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+</head>
+<body>
+
+<div id="loginContainer" class="login-shell">
+  <button type="button" class="theme-toggle" data-theme-toggle>☀️ Claro</button>
+  <div class="login-card">
+    <h1>Acceso al panel</h1>
+    <p>Selecciona tu perfil e ingresa tu contraseña.</p>
+    <form id="loginForm">
+      <label>Usuario</label>
+      <input type="text" id="loginUsername" autocomplete="username" required placeholder="" />
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" required />
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      <p id="loginError" class="login-error">Usuario o contraseña incorrectos.</p>
+    </form>
+  </div>
+</div>
+
+<div id="appContainer" class="app-shell hidden">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Panel operativo</div>
+      <h1>Formato de Tratamiento SAI.</h1>
+      <p>Filtra, revisa el estatus de cada factura confirmada sin salir del panel.</p>
+    </div>
+    <div class="hero-actions">
+      <span id="sesionInfo" class="session-pill"></span>
+      <button type="button" class="theme-toggle" data-theme-toggle>☀️ Claro</button>
+      <button id="btnCerrarSesion" class="btn btn-ghost">Salir</button>
+    </div>
+  </header>
+
+  <section id="panelDashboardAdmin" class="panel panel-executive hidden">
+    <div class="exec-head">
+      <div>
+        <div class="eyebrow">Solo administración</div>
+        <h2>Dashboard ejecutivo · Monto del servicio</h2>
+        <p class="muted">Visión consolidada de facturación por sede, tendencia y mezcla de tratamientos.</p>
+      </div>
+      <span id="execActualizado" class="muted">—</span>
+    </div>
+
+    <div class="exec-kpis">
+      <article class="exec-kpi exec-kpi-hero">
+        <span>Monto total de servicio</span>
+        <strong id="execMontoTotal">$0</strong>
+        <small id="execMontoRegistros">0 registros facturados</small>
+      </article>
+      <article class="exec-kpi">
+        <span>Ticket promedio</span>
+        <strong id="execTicketPromedio">$0</strong>
+        <small>por registro</small>
+      </article>
+      <article class="exec-kpi">
+        <span>Sede líder</span>
+        <strong id="execSedeLider">—</strong>
+        <small id="execSedeLiderMonto">$0</small>
+      </article>
+      <article class="exec-kpi" id="execCrecimientoCard">
+        <span>Mes actual vs anterior</span>
+        <strong id="execCrecimiento">—</strong>
+        <small id="execCrecimientoDetalle">Sin datos suficientes</small>
+      </article>
+    </div>
+
+    <div class="exec-kpis exec-kpis-secondary">
+      <article class="exec-kpi">
+        <span>Origen del pago</span>
+        <strong id="execOrigenPagoPct">—</strong>
+        <small id="execOrigenPagoDetalle">Sin datos suficientes</small>
+      </article>
+      <article class="exec-kpi">
+        <span>Pacientes recurrentes</span>
+        <strong id="execRetencionPct">—</strong>
+        <small id="execRetencionDetalle">Sin datos suficientes</small>
+      </article>
+      <article class="exec-kpi">
+        <span>Sede con mejor ticket promedio</span>
+        <strong id="execSedeMejorTicket">—</strong>
+        <small id="execSedeMejorTicketMonto">$0 por registro</small>
+      </article>
+    </div>
+
+    <div class="exec-charts">
+      <div class="exec-chart-card">
+        <div class="exec-chart-head">
+          <h3>Origen del pago</h3>
+          <span class="muted">Aseguradora vs pago de bolsillo</span>
+        </div>
+        <div class="exec-chart-canvas"><canvas id="chartOrigenPago"></canvas></div>
+      </div>
+      <div class="exec-chart-card">
+        <div class="exec-chart-head">
+          <h3>Ticket promedio por pagador</h3>
+          <span class="muted">¿Quién paga mejor por servicio?</span>
+        </div>
+        <div class="exec-chart-canvas"><canvas id="chartTicketPagador"></canvas></div>
+      </div>
+      <div class="exec-chart-card exec-chart-wide exec-pacientes-card">
+        <div class="exec-chart-head">
+          <h3>Pacientes</h3>
+          <span class="muted">Visitas por paciente y si son recurrentes</span>
+        </div>
+        <input type="text" id="execPacientesBuscar" class="exec-pacientes-buscar" placeholder="Buscar paciente...">
+        <div class="exec-pacientes-tabla-wrap">
+          <table class="exec-pacientes-tabla">
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Sede</th>
+                <th>Visitas</th>
+                <th>Monto total</th>
+                <th>Estatus</th>
+              </tr>
+            </thead>
+            <tbody id="execPacientesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="exec-charts">
+      <div class="exec-chart-card">
+        <div class="exec-chart-head">
+          <h3>Por sede</h3>
+          <span class="muted">Comparativo entre sedes</span>
+        </div>
+        <div class="exec-chart-canvas"><canvas id="chartPorSede"></canvas></div>
+      </div>
+      <div class="exec-chart-card">
+        <div class="exec-chart-head">
+          <h3>Tipo de tratamientos</h3>
+          <span class="muted">% del monto total</span>
+        </div>
+        <div class="exec-chart-canvas"><canvas id="chartTratamiento"></canvas></div>
+      </div>
+      <div class="exec-chart-card exec-chart-wide">
+        <div class="exec-chart-head">
+          <h3>Por médico</h3>
+          <span class="muted">Monto del servicio facturado por médico</span>
+        </div>
+        <div class="exec-chart-canvas"><canvas id="chartPorMedico"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="dashboard">
+    <section class="panel panel-kpis">
+      <div class="section-head">
+        <h2>KPIs operativos</h2>
+        <span id="ultimaActualizacion" class="muted">—</span>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card accent-blue">
+          <span>Subtotal</span>
+          <strong id="kpiSubtotal">0</strong>
+          <small id="kpiSubtotalMonto">$0</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel panel-filters">
+      <div class="section-head">
+        <h2>Filtros</h2>
+        <button id="btnLimpiarFiltros" class="btn btn-ghost">Limpiar filtros</button>
+      </div>
+      <div class="filters-grid">
+        <div class="field grow-2">
+          <label>Buscar por paciente</label>
+          <input type="text" id="filtroTexto" placeholder="Ej. folio, nombre del paciente..." />
+        </div>
+        <div class="field">
+          <label>Marca</label>
+          <div class="chip-group">
+            <label class="chip"><input type="checkbox" class="filtro-marca" value="SANARÉ" checked /> Sanaré</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Fecha operativa desde</label>
+          <input type="date" id="filtroFechaInicio" />
+        </div>
+        <div class="field">
+          <label>Fecha operativa hasta</label>
+          <input type="date" id="filtroFechaFin" />
+        </div>
+        <div class="field" id="campoFiltroSede">
+          <label>Sede</label>
+          <select id="filtroSede">
+            <option value="">Todas</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel-table">
+      <div class="section-head">
+        <h2>Tabla unificada</h2>
+          <div class="import-controls">
+    <select id="importMarca">
+      <option value="SANARÉ">Sanaré</option>
+    </select>
+    <button id="btnImportarExcel" class="btn btn-ghost">Importar Excel</button>
+    <button id="btnExportarExcel" class="btn btn-ghost hidden">Exportar Excel</button>
+    <button id="btnNuevoRegistro" class="btn btn-primary">Nuevo registro</button>
+    <input type="file" id="inputExcelFile" accept=".xlsx,.xls" class="hidden" />
+  </div>
+        <span id="contadorFilas" class="muted">0 registros</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha Infusión</th>
+              <th>Semana</th>
+              <th>Servicio</th>
+              <th>Hora de Cita</th>
+              <th>Hora de Ingreso</th>
+              <th>Hora de Salida</th>
+              <th>Vía de Acceso</th>
+              <th>Tiempo de Infusión</th>
+              <th>Ciclo</th>
+              <th>Paciente</th>
+              <th>Estatus de Paciente</th>
+              <th>Médicos</th>
+              <th>Tipo de tratamiento</th>
+              <th>Aseguradora y/o pago de bolsillo</th>
+              <th>Honorario médico</th>
+              <th>1º vez</th>
+              <th>Subtotal</th>
+              <th>Iva</th>
+              <th>Monto del servicio</th>
+              <th>Tratamiento</th>
+              <th>Diagnostico</th>
+              <th>Notas</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCotizacionesBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+<aside id="drawer" class="drawer hidden">
+  <div class="drawer-head">
+    <div>
+      <div id="drawerMarca" class="eyebrow"></div>
+      <h2 id="drawerPaciente">Paciente</h2>
+      <p id="drawerMeta" class="muted"></p>
+    </div>
+    <button id="btnCerrarDrawer" class="btn btn-ghost">Cerrar</button>
+  </div>
+
+  <div class="drawer-body">
+    <section class="drawer-card">
+      <div class="section-head compact">
+        <h3>Resumen de cotización</h3>
+        <span class="muted">Edita los datos y guarda los cambios</span>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha Infusión</label>
+          <input type="date" id="edFechaInfusion" />
+        </div>
+        <div class="field">
+          <label>Semana</label>
+          <input type="number" id="edSemana" min="1" />
+        </div>
+        <div class="field">
+          <label>Servicio</label>
+          <input type="text" id="edServicio" />
+        </div>
+       <div class="field">
+          <label>Hora de Cita</label>
+          <input type="text" id="edHoraCita" placeholder="08:30 hrs" />
+        </div>
+        <div class="field">
+          <label>Hora de Ingreso</label>
+          <input type="text" id="edHoraIngreso" placeholder="08:15 hrs" />
+        </div>
+        <div class="field">
+          <label>Hora de Salida</label>
+          <input type="text" id="edHoraSalida" placeholder="11:30 hrs" />
+        </div>
+        <div class="field">
+          <label>Vía de Acceso</label>
+          <input type="text" id="edViaAcceso" placeholder="Periférica / Catéter central / Puerto" />
+        </div>
+        <div class="field">
+          <label>Tiempo de Infusión</label>
+          <input type="text" id="edTiempoInfusion" placeholder="Ej. 2 hrs 30 min" />
+        </div>
+        <div class="field">
+          <label>Ciclo</label>
+          <input type="text" id="edCiclo" />
+        </div>
+        <div class="field grow-2">
+          <label>Paciente</label>
+          <input type="text" id="edPaciente" />
+        </div>
+        <div class="field">
+          <label>Estatus de Paciente</label>
+          <input type="text" id="edEstatusPaciente" />
+        </div>
+        <div class="field">
+          <label>Médicos</label>
+          <input type="text" id="edMedicos" />
+        </div>
+        <div class="field">
+          <label>Tipo de tratamiento</label>
+          <input type="text" id="edTipoTratamiento" />
+        </div>
+       <div class="field">
+  <label>Aseguradora y/o pago de bolsillo</label>
+  <input type="text" id="edAseguradora" list="listaAseguradoras" autocomplete="off" />
+</div>
+        <div class="field">
+          <label>Honorario médico</label>
+          <input type="number" id="edHonorarioMedico" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>1º vez</label>
+          <input type="text" id="edPrimeraVez" placeholder="SUBSECUENTE / 1 A VEZ" />
+        </div>
+        <div class="field">
+          <label>Subtotal</label>
+          <input type="number" id="edSubtotal" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Iva</label>
+          <input type="number" id="edIva" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Monto del servicio</label>
+          <input type="number" id="edMontoServicio" min="0" step="0.01" />
+        </div>
+        <div class="field grow-2">
+          <label>Tratamiento</label>
+          <input type="text" id="edTratamiento" />
+        </div>
+        <div class="field grow-2">
+          <label>Diagnostico</label>
+          <input type="text" id="edDiagnostico" />
+        </div>
+        <div class="field grow-2">
+          <label>Notas</label>
+          <input type="text" id="edNotas" />
+        </div>
+        <div class="field">
+          <label>Sede</label>
+          <input type="text" id="edSede" />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="drawer-footer">
+    <button id="btnBorrarRegistro" class="btn btn-ghost btn-danger">Borrar registro</button>
+    <button id="btnGuardarDetalle" class="btn btn-primary">Guardar cambios</button>
+  </div>
+</aside>
+
+<div id="drawerNuevoBackdrop" class="drawer-backdrop hidden"></div>
+<aside id="drawerNuevoRegistro" class="drawer hidden">
+  <div class="drawer-head">
+    <div>
+      <div class="eyebrow">Captura</div>
+      <h2>Nuevo registro</h2>
+      <p id="nuevoRegistroSedeInfo" class="muted"></p>
+    </div>
+    <button id="btnCerrarDrawerNuevo" class="btn btn-ghost">Cerrar</button>
+  </div>
+
+  <div class="drawer-body">
+    <section class="drawer-card">
+      <div class="section-head compact">
+        <h3>Datos del tratamiento</h3>
+        <span class="muted">Mismos campos que el formato de Excel</span>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha Infusión</label>
+          <input type="date" id="nrFechaInfusion" required />
+        </div>
+        <div class="field">
+          <label>Semana</label>
+          <input type="number" id="nrSemana" min="1" placeholder="1" />
+        </div>
+        <div class="field">
+          <label>Servicio</label>
+          <input type="text" id="nrServicio" placeholder="INFUSION" />
+        </div>
+      <div class="field">
+  <label>Hora de Cita</label>
+  <input type="time" id="nrHoraCita" />
+</div>
+        <div class="field">
+          <label>Hora de Ingreso</label>
+          <input type="time" id="nrHoraIngreso" />
+        </div>
+        <div class="field">
+          <label>Hora de Salida</label>
+          <input type="time" id="nrHoraSalida" />
+        </div>
+        <div class="field">
+          <label>Vía de Acceso</label>
+          <input type="text" id="nrViaAcceso" placeholder="Periférica / Catéter central / Puerto" />
+        </div>
+        <div class="field">
+          <label>Tiempo de Infusión</label>
+          <input type="text" id="nrTiempoInfusion" placeholder="Ej. 2 hrs 30 min" />
+        </div>
+        <div class="field">
+          <label>Ciclo</label>
+          <input type="text" id="nrCiclo" placeholder="C1" />
+        </div>
+        <div class="field grow-2">
+          <label>Paciente</label>
+          <input type="text" id="nrPaciente" placeholder="Nombre completo del paciente" required />
+        </div>
+        <div class="field">
+          <label>Estatus de Paciente</label>
+          <input type="text" id="nrEstatusPaciente" placeholder="ACTIVO" />
+        </div>
+        <div class="field">
+          <label>Médicos</label>
+          <input type="text" id="nrMedicos" placeholder="Dr./Dra. Nombre" />
+        </div>
+        <div class="field">
+          <label>Tipo de tratamiento</label>
+          <input type="text" id="nrTipoTratamiento" placeholder="QT" />
+        </div>
+       <div class="field">
+      <label>Aseguradora y/o pago de bolsillo</label>
+      <input type="text" id="nrAseguradora" list="listaAseguradoras" placeholder="Escribe o elige de la lista..." autocomplete="off" />
+    </div>
+        <div class="field">
+          <label>Honorario médico</label>
+          <input type="number" id="nrHonorarioMedico" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label>1º vez</label>
+          <select id="nrPrimeraVez">
+            <option value="SUBSECUENTE">SUBSECUENTE</option>
+            <option value="1 A VEZ">1 A VEZ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Subtotal</label>
+          <input type="number" id="nrSubtotal" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label>Iva</label>
+          <input type="number" id="nrIva" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label>Monto del servicio</label>
+          <input type="number" id="nrMontoServicio" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="field grow-2">
+          <label>Tratamiento</label>
+          <input type="text" id="nrTratamiento" placeholder="Ej. R-CHOP" />
+        </div>
+        <div class="field grow-2">
+          <label>Diagnostico</label>
+          <input type="text" id="nrDiagnostico" placeholder="Diagnóstico del paciente" />
+        </div>
+        <div class="field">
+          <label>Notas</label>
+          <input type="number" id="nrNotas" min="0" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="drawer-footer">
+    <button id="btnGuardarNuevoRegistro" class="btn btn-primary">Guardar registro</button>
+  </div>
+</aside>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="Supabaseclient.js"></script>
+<script src="Excelimport.js"></script>
+<script src="nuevoRegistro.js"></script>
+<script src="auth.js"></script>
+<script src="main.js"></script>
+<script src="dashboard.js"></script>
+<datalist id="listaAseguradoras">
+  <option value="Pago de bolsillo"></option>
+  <option value="GNP Seguros"></option>
+  <option value="AXA Seguros"></option>
+  <option value="MetLife México"></option>
+  <option value="Imbursa México"></option>
+  <option value="Plan Seguro"></option>
+  <option value="BBVA Seguros"></option>
+  <option value="Bupa México"></option>
+</body>
+</html>

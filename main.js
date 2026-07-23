@@ -126,7 +126,11 @@ function renderTable(rows) {
       <td>${escapeHtml(row.viaAcceso || "—")}</td>
       <td>${escapeHtml(row.tiempoInfusion || "—")}</td>
       <td>${escapeHtml(row.ciclo || "—")}</td>
+      <td>${escapeHtml(row.numeroCiclos ?? "—")}</td>
       <td>${escapeHtml(row.paciente)}</td>
+      <td>${escapeHtml(row.delegacion || "—")}</td>
+      <td>${escapeHtml(row.edad ?? "—")}</td>
+      <td>${escapeHtml(row.sexo || "—")}</td>
       <td>${escapeHtml(row.estatusPaciente || "—")}</td>
       <td>${escapeHtml(row.medicos || "—")}</td>
       <td>${escapeHtml(row.tipoTratamiento || "—")}</td>
@@ -163,7 +167,8 @@ function persist(row, msg) {
 const CAMPOS_EDITABLES_DETALLE = [
   "edFechaInfusion", "edSemana", "edServicio", "edHoraCita",
   "edHoraIngreso", "edHoraSalida", "edViaAcceso", "edTiempoInfusion",
-  "edCiclo", "edPaciente",
+  "edCiclo", "edNumeroCiclos", "edPaciente",
+  "edDelegacion", "edEdad", "edSexo",
   "edEstatusPaciente", "edMedicos", "edTipoTratamiento", "edAseguradora", "edHonorarioMedico",
   "edPrimeraVez", "edSubtotal", "edIva", "edMontoServicio", "edTratamiento", "edDiagnostico",
   "edNotas", "edSede"
@@ -186,7 +191,11 @@ function openDrawer(id) {
   $("edViaAcceso").value = selectedRow.viaAcceso || "";
   $("edTiempoInfusion").value = selectedRow.tiempoInfusion || "";
   $("edCiclo").value = selectedRow.ciclo || "";
+  $("edNumeroCiclos").value = selectedRow.numeroCiclos ?? "";
   $("edPaciente").value = selectedRow.paciente || "";
+  $("edDelegacion").value = selectedRow.delegacion || "";
+  $("edEdad").value = selectedRow.edad ?? "";
+  $("edSexo").value = selectedRow.sexo || "";
   $("edEstatusPaciente").value = selectedRow.estatusPaciente || "";
   $("edMedicos").value = selectedRow.medicos || "";
   $("edTipoTratamiento").value = selectedRow.tipoTratamiento || "";
@@ -240,7 +249,11 @@ async function saveDrawer() {
     via_acceso: $("edViaAcceso").value.trim() || null,
     tiempo_infusion: $("edTiempoInfusion").value.trim() || null,
     ciclo: $("edCiclo").value.trim() || null,
+    numero_ciclos: leerNumeroEd($("edNumeroCiclos").value),
     paciente,
+    delegacion_origen: $("edDelegacion").value.trim() || null,
+    edad: leerNumeroEd($("edEdad").value),
+    sexo: $("edSexo").value.trim() || null,
     estatus_paciente: $("edEstatusPaciente").value.trim() || null,
     medicos: $("edMedicos").value.trim() || null,
     tipo_tratamiento: $("edTipoTratamiento").value.trim() || null,
@@ -357,7 +370,11 @@ function mapRegistroSupabase(r) {
     viaAcceso: r.via_acceso || "",
     tiempoInfusion: r.tiempo_infusion || "",
     ciclo: r.ciclo || "",
+    numeroCiclos: r.numero_ciclos,
     paciente: r.paciente || "",
+    delegacion: r.delegacion_origen || "",
+    edad: r.edad,
+    sexo: r.sexo || "",
     estatusPaciente: r.estatus_paciente || "",
     medicos: r.medicos || "",
     tipoTratamiento: r.tipo_tratamiento || "",

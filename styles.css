@@ -347,13 +347,20 @@ html[data-theme="light"] .toast.error { border-color: rgba(220,38,38,.3); backgr
 .exec-kpi-hero strong { font-size: clamp(1.9rem, 3vw, 2.5rem); background: linear-gradient(135deg, #eaf3ff, #cfe2ff);
   -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-.exec-charts {
-  position: relative;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+.exec-tabs {
+  display: flex; gap: .6rem; margin-bottom: 1.2rem; flex-wrap: wrap;
 }
-@media (max-width: 900px) { .exec-charts { grid-template-columns: 1fr; } }
-.exec-chart-wide { grid-column: span 2; }
-@media (max-width: 900px) { .exec-chart-wide { grid-column: span 1; } }
+.exec-tab-btn {
+  border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03);
+  color: var(--muted); padding: .6rem 1.1rem; border-radius: 999px;
+  font-size: .88rem; font-weight: 600; cursor: pointer; transition: .18s ease;
+}
+.exec-tab-btn:hover { background: rgba(78,163,255,.12); color: var(--text); }
+.exec-tab-btn.active {
+  background: linear-gradient(135deg, #318dff, #225dff); color: #fff; border-color: transparent;
+  box-shadow: 0 10px 25px rgba(78,163,255,.3);
+}
+.exec-tab-panel.hidden { display: none; }
 
 .exec-kpis-secondary {
   grid-template-columns: 1fr 1fr 1fr;
@@ -362,42 +369,69 @@ html[data-theme="light"] .toast.error { border-color: rgba(220,38,38,.3); backgr
 @media (max-width: 900px) { .exec-kpis-secondary { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .exec-kpis-secondary { grid-template-columns: 1fr; } }
 
-.exec-chart-card {
-  background: rgba(255,255,255,.025);
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 20px; padding: 1rem 1.1rem 1.15rem;
+/* ============================================================
+   TABLA DINÁMICA INTERACTIVA
+   ============================================================ */
+.pivot-toolbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: .9rem;
+  background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px; padding: 1rem 1.1rem; margin-bottom: 1.1rem;
 }
-.exec-chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; margin-bottom: .7rem; flex-wrap: wrap; }
-.exec-chart-head h3 { margin: 0; font-size: 1rem; }
-.exec-chart-canvas { position: relative; height: 260px; }
-.exec-chart-wide .exec-chart-canvas { height: 340px; }
+.pivot-field { display: flex; flex-direction: column; gap: .35rem; min-width: 150px; }
+.pivot-field label { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.pivot-field select, .pivot-field input {
+  padding: .55rem .7rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04); color: var(--text); font-size: .88rem;
+}
+.pivot-field select:focus, .pivot-field input:focus { outline: none; border-color: rgba(78,163,255,.55); }
+.pivot-search { flex: 1 1 200px; }
+.pivot-actions { display: flex; gap: .6rem; margin-left: auto; align-self: flex-end; }
 
-/* Tabla de pacientes (nuevos vs recurrentes) */
-.exec-pacientes-buscar {
-  width: 100%; box-sizing: border-box; margin-bottom: .8rem;
-  padding: .6rem .8rem; border-radius: 12px;
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
-  color: inherit; font-size: .9rem;
+.pivot-insights {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: .9rem; margin-bottom: 1.1rem;
 }
-.exec-pacientes-buscar:focus { outline: none; border-color: rgba(78,163,255,.5); }
-.exec-pacientes-tabla-wrap { max-height: 340px; overflow-y: auto; border-radius: 12px; }
-.exec-pacientes-tabla { width: 100%; border-collapse: collapse; font-size: .87rem; }
-.exec-pacientes-tabla thead th {
-  position: sticky; top: 0; text-align: left; padding: .55rem .7rem;
-  background: rgba(255,255,255,.05); color: var(--muted);
-  font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+@media (max-width: 900px) { .pivot-insights { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .pivot-insights { grid-template-columns: 1fr; } }
+.pivot-insight {
+  background: linear-gradient(135deg, rgba(78,163,255,.14), rgba(124,92,255,.1));
+  border: 1px solid rgba(78,163,255,.22); border-radius: 16px; padding: .9rem 1.05rem;
 }
-.exec-pacientes-tabla tbody td {
-  padding: .55rem .7rem; border-bottom: 1px solid rgba(255,255,255,.06);
+.pivot-insight span { display: block; color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; }
+.pivot-insight strong { display: block; font-size: 1.4rem; margin: .3rem 0 .15rem; word-break: break-word; }
+.pivot-insight small { color: var(--muted); font-size: .78rem; }
+
+.pivot-table-wrap {
+  max-height: 560px; overflow: auto; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
 }
-.exec-pacientes-tabla tbody tr:last-child td { border-bottom: none; }
-.pill {
-  display: inline-block; padding: .2rem .6rem; border-radius: 999px;
-  font-size: .78rem; font-weight: 600;
+.pivot-table { border-collapse: collapse; width: 100%; font-size: .86rem; }
+.pivot-table thead th {
+  position: sticky; top: 0; z-index: 2; text-align: center; padding: .65rem .85rem;
+  background: rgba(15,29,49,.97); color: var(--muted); font-weight: 600;
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;
+  border-bottom: 1px solid rgba(255,255,255,.1); white-space: nowrap;
 }
-.pill-recurrente { background: rgba(55,211,154,.15); color: #37d39a; }
-.pill-nuevo { background: rgba(255,176,32,.15); color: #ffb020; }
+.pivot-table thead th.pivot-corner {
+  position: sticky; left: 0; top: 0; z-index: 3; text-align: left; text-transform: none;
+  font-size: .82rem; background: rgba(15,29,49,.97);
+}
+.pivot-table tbody th.pivot-row-head {
+  position: sticky; left: 0; z-index: 1; text-align: left; padding: .6rem .85rem;
+  background: rgba(15,29,49,.94); color: var(--text); font-weight: 600; white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,.1); border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.pivot-table tbody td {
+  text-align: center; padding: .6rem .85rem; border-bottom: 1px solid rgba(255,255,255,.06);
+  color: var(--text); font-variant-numeric: tabular-nums; transition: background .15s ease;
+}
+.pivot-table tbody tr:hover td { filter: brightness(1.18); }
+.pivot-table td.pivot-vacia { color: var(--muted); }
+.pivot-table td.pivot-total-col, .pivot-table tr.pivot-total-row td, .pivot-table tr.pivot-total-row th {
+  font-weight: 700; background: rgba(78,163,255,.12) !important;
+}
+.pivot-table tr.pivot-total-row th { position: sticky; left: 0; z-index: 1; }
+.pivot-vacio { text-align: center; padding: 1.5rem 0; }
+
 
 /* Tema claro para el dashboard ejecutivo */
 html[data-theme="light"] .panel-executive {
@@ -414,6 +448,17 @@ html[data-theme="light"] .exec-kpi-hero strong {
   background: linear-gradient(135deg, #17427a, #3467c8); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 html[data-theme="light"] .exec-chart-card { background: #ffffff; border-color: rgba(15,23,42,.08); }
-html[data-theme="light"] .exec-pacientes-buscar { background: #f8fafc; border-color: rgba(15,23,42,.12); color: #0f172a; }
-html[data-theme="light"] .exec-pacientes-tabla thead th { background: #f1f5f9; border-color: rgba(15,23,42,.08); }
-html[data-theme="light"] .exec-pacientes-tabla tbody td { border-color: rgba(15,23,42,.06); }
+html[data-theme="light"] .exec-tab-btn { background: #f3f6fb; border-color: rgba(15,23,42,.12); color: #33415c; }
+html[data-theme="light"] .exec-tab-btn:hover { background: rgba(78,163,255,.12); color: #101828; }
+html[data-theme="light"] .pivot-toolbar { background: #ffffff; border-color: rgba(15,23,42,.08); }
+html[data-theme="light"] .pivot-field select, html[data-theme="light"] .pivot-field input {
+  background: #f3f6fb; border-color: rgba(15,23,42,.14); color: #101828;
+}
+html[data-theme="light"] .pivot-insight { background: linear-gradient(135deg, rgba(78,163,255,.1), rgba(124,92,255,.06)); border-color: rgba(78,163,255,.2); }
+html[data-theme="light"] .pivot-table-wrap { border-color: rgba(15,23,42,.1); }
+html[data-theme="light"] .pivot-table thead th,
+html[data-theme="light"] .pivot-table thead th.pivot-corner,
+html[data-theme="light"] .pivot-table tbody th.pivot-row-head {
+  background: #f6f8fc; color: #33415c; border-color: rgba(15,23,42,.08);
+}
+html[data-theme="light"] .pivot-table tbody td { color: #1f2937; border-color: rgba(15,23,42,.06); }

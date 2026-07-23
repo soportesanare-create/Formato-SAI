@@ -228,7 +228,11 @@
               <th>Vía de Acceso</th>
               <th>Tiempo de Infusión</th>
               <th>Ciclo</th>
+              <th>No. de Ciclos</th>
               <th>Paciente</th>
+              <th>Delegación de Origen</th>
+              <th>Edad</th>
+              <th>Sexo</th>
               <th>Estatus de Paciente</th>
               <th>Médicos</th>
               <th>Tipo de tratamiento</th>
@@ -305,9 +309,29 @@
           <label>Ciclo</label>
           <input type="text" id="edCiclo" />
         </div>
+        <div class="field">
+          <label>No. de Ciclos</label>
+          <input type="number" id="edNumeroCiclos" min="0" step="1" />
+        </div>
         <div class="field grow-2">
           <label>Paciente</label>
           <input type="text" id="edPaciente" />
+        </div>
+        <div class="field">
+          <label>Delegación de Origen</label>
+          <input type="text" id="edDelegacion" />
+        </div>
+        <div class="field">
+          <label>Edad</label>
+          <input type="number" id="edEdad" min="0" step="1" />
+        </div>
+        <div class="field">
+          <label>Sexo</label>
+          <select id="edSexo">
+            <option value="">—</option>
+            <option value="F">F</option>
+            <option value="M">M</option>
+          </select>
         </div>
         <div class="field">
           <label>Estatus de Paciente</label>
@@ -425,9 +449,29 @@
           <label>Ciclo</label>
           <input type="text" id="nrCiclo" placeholder="C1" />
         </div>
+        <div class="field">
+          <label>No. de Ciclos</label>
+          <input type="number" id="nrNumeroCiclos" min="0" step="1" placeholder="1" />
+        </div>
         <div class="field grow-2">
           <label>Paciente</label>
           <input type="text" id="nrPaciente" placeholder="Nombre completo del paciente" required />
+        </div>
+        <div class="field">
+          <label>Delegación de Origen</label>
+          <input type="text" id="nrDelegacion" placeholder="Ej. Cuauhtémoc" />
+        </div>
+        <div class="field">
+          <label>Edad</label>
+          <input type="number" id="nrEdad" min="0" step="1" placeholder="45" />
+        </div>
+        <div class="field">
+          <label>Sexo</label>
+          <select id="nrSexo">
+            <option value="">—</option>
+            <option value="F">F</option>
+            <option value="M">M</option>
+          </select>
         </div>
         <div class="field">
           <label>Estatus de Paciente</label>

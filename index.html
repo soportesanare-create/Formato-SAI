@@ -44,11 +44,17 @@
       <div>
         <div class="eyebrow">Solo administración</div>
         <h2>Dashboard ejecutivo · Monto del servicio</h2>
-        <p class="muted">Visión consolidada de facturación por sede, tendencia y mezcla de tratamientos.</p>
+        <p class="muted">Visión consolidada de facturación por sede y tabla dinámica interactiva del concentrado.</p>
       </div>
       <span id="execActualizado" class="muted">—</span>
     </div>
 
+    <div class="exec-tabs">
+      <button type="button" class="exec-tab-btn active" data-exec-tab="resumen">📊 Resumen ejecutivo</button>
+      <button type="button" class="exec-tab-btn" data-exec-tab="pivot">🧮 Tabla dinámica</button>
+    </div>
+
+    <div id="execTabResumen" class="exec-tab-panel">
     <div class="exec-kpis">
       <article class="exec-kpi exec-kpi-hero">
         <span>Monto total de servicio</span>
@@ -90,68 +96,69 @@
       </article>
     </div>
 
-    <div class="exec-charts">
-      <div class="exec-chart-card">
-        <div class="exec-chart-head">
-          <h3>Origen del pago</h3>
-          <span class="muted">Aseguradora vs pago de bolsillo</span>
-        </div>
-        <div class="exec-chart-canvas"><canvas id="chartOrigenPago"></canvas></div>
-      </div>
-      <div class="exec-chart-card">
-        <div class="exec-chart-head">
-          <h3>Ticket promedio por pagador</h3>
-          <span class="muted">¿Quién paga mejor por servicio?</span>
-        </div>
-        <div class="exec-chart-canvas"><canvas id="chartTicketPagador"></canvas></div>
-      </div>
-      <div class="exec-chart-card exec-chart-wide exec-pacientes-card">
-        <div class="exec-chart-head">
-          <h3>Pacientes</h3>
-          <span class="muted">Visitas por paciente y si son recurrentes</span>
-        </div>
-        <input type="text" id="execPacientesBuscar" class="exec-pacientes-buscar" placeholder="Buscar paciente...">
-        <div class="exec-pacientes-tabla-wrap">
-          <table class="exec-pacientes-tabla">
-            <thead>
-              <tr>
-                <th>Paciente</th>
-                <th>Sede</th>
-                <th>Visitas</th>
-                <th>Monto total</th>
-                <th>Estatus</th>
-              </tr>
-            </thead>
-            <tbody id="execPacientesTbody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
-    <div class="exec-charts">
-      <div class="exec-chart-card">
-        <div class="exec-chart-head">
-          <h3>Por sede</h3>
-          <span class="muted">Comparativo entre sedes</span>
+    <div id="execTabPivot" class="exec-tab-panel hidden">
+      <div class="pivot-toolbar">
+        <div class="pivot-field">
+          <label>Filas</label>
+          <select id="pivotFilas"></select>
         </div>
-        <div class="exec-chart-canvas"><canvas id="chartPorSede"></canvas></div>
-      </div>
-      <div class="exec-chart-card">
-        <div class="exec-chart-head">
-          <h3>Tipo de tratamientos</h3>
-          <span class="muted">% del monto total</span>
+        <div class="pivot-field">
+          <label>Columnas</label>
+          <select id="pivotColumnas"></select>
         </div>
-        <div class="exec-chart-canvas"><canvas id="chartTratamiento"></canvas></div>
-      </div>
-      <div class="exec-chart-card exec-chart-wide">
-        <div class="exec-chart-head">
-          <h3>Por médico</h3>
-          <span class="muted">Monto del servicio facturado por médico</span>
+        <div class="pivot-field">
+          <label>Valor</label>
+          <select id="pivotValor"></select>
         </div>
-        <div class="exec-chart-canvas"><canvas id="chartPorMedico"></canvas></div>
+        <div class="pivot-field">
+          <label>Función</label>
+          <select id="pivotFuncion">
+            <option value="count">Conteo</option>
+            <option value="sum">Suma</option>
+            <option value="avg">Promedio</option>
+            <option value="max">Máximo</option>
+            <option value="min">Mínimo</option>
+          </select>
+        </div>
+        <div class="pivot-field pivot-search">
+          <label>Buscar</label>
+          <input type="text" id="pivotBuscar" placeholder="Filtrar registros..." />
+        </div>
+        <div class="pivot-actions">
+          <button type="button" id="btnPivotIntercambiar" class="btn btn-ghost" title="Intercambiar filas y columnas">⇄ Intercambiar</button>
+          <button type="button" id="btnPivotExportar" class="btn btn-ghost">Exportar a Excel</button>
+        </div>
       </div>
+
+      <div class="pivot-insights">
+        <div class="pivot-insight">
+          <span>Total general</span>
+          <strong id="pivotInsightTotal">0</strong>
+        </div>
+        <div class="pivot-insight">
+          <span>Combinación más alta</span>
+          <strong id="pivotInsightTop">—</strong>
+          <small id="pivotInsightTopDetalle" class="muted">Sin datos</small>
+        </div>
+        <div class="pivot-insight">
+          <span>Grupos en filas</span>
+          <strong id="pivotInsightFilas">0</strong>
+        </div>
+        <div class="pivot-insight">
+          <span>Grupos en columnas</span>
+          <strong id="pivotInsightColumnas">0</strong>
+        </div>
+      </div>
+
+      <div class="pivot-table-wrap">
+        <table class="pivot-table" id="pivotTabla"></table>
+      </div>
+      <p id="pivotVacio" class="muted pivot-vacio hidden">No hay registros que coincidan con la búsqueda.</p>
     </div>
   </section>
+
 
   <main class="dashboard">
     <section class="panel panel-kpis">
@@ -537,7 +544,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="Supabaseclient.js"></script>
 <script src="Excelimport.js"></script>
 <script src="nuevoRegistro.js"></script>

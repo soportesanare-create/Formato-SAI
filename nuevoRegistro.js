@@ -12,9 +12,11 @@ function calcularSemanaDelMes(fechaStr) {
 function limpiarFormularioNuevoRegistro() {
 ["nrFechaInfusion", "nrSemana", "nrServicio", "nrHoraCita",
    "nrHoraIngreso", "nrHoraSalida", "nrViaAcceso", "nrTiempoInfusion",
-   "nrCiclo", "nrPaciente",
+   "nrCiclo", "nrNumeroCiclos", "nrPaciente",
+   "nrDelegacion", "nrEdad",
    "nrEstatusPaciente", "nrMedicos", "nrTipoTratamiento", "nrAseguradora", "nrHonorarioMedico",
    "nrSubtotal", "nrIva", "nrMontoServicio", "nrTratamiento", "nrDiagnostico", "nrNotas"].forEach(id => { $(id).value = ""; });
+  $("nrSexo").value = "";
   $("nrPrimeraVez").value = "SUBSECUENTE";
   $("nrEstatusPaciente").value = "ACTIVO";
   $("nrServicio").value = "INFUSION";
@@ -61,7 +63,11 @@ hora_cita: $("nrHoraCita").value ? `${$("nrHoraCita").value} hrs` : null,
     via_acceso: $("nrViaAcceso").value.trim() || null,
     tiempo_infusion: $("nrTiempoInfusion").value.trim() || null,
     ciclo: $("nrCiclo").value.trim() || null,
+    numero_ciclos: leerNumero($("nrNumeroCiclos").value),
     paciente,
+    delegacion_origen: $("nrDelegacion").value.trim() || null,
+    edad: leerNumero($("nrEdad").value),
+    sexo: $("nrSexo").value.trim() || null,
     estatus_paciente: $("nrEstatusPaciente").value.trim() || null,
     medicos: $("nrMedicos").value.trim() || null,
     tipo_tratamiento: $("nrTipoTratamiento").value.trim() || null,
